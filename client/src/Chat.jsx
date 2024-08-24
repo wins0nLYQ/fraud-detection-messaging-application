@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import Avatar from "./Avatar";
+import Logo from "./Logo";
+import { UserContext } from "./UserContext";
 
 
 export default function Chat() {
     const [ws, setWs] = useState(null);
     const [onlineUser, setOnlineUser] = useState([]);
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const {username,id} = useContext(UserContext);
 
     useEffect(() => {
         const ws = new WebSocket('ws://localhost:3000');
@@ -28,24 +32,40 @@ export default function Chat() {
         }
     }
 
+    function selectContact(userId) {
+        
+    }
+
+    const onlineUserExcludeOwner = {...onlineUser};
+    delete onlineUserExcludeOwner[id];
+
     return (
         <div className="flex h-screen">
-            <div className="bg-white w-1/3 pl-4 pt-4">
-                <div className="text-blue-600 font-bold flex gap-2 mb-4">
-                    {/* SVG Chat Logo */}
-                    MernChat
-                </div>
-                
-                {Object.keys(onlineUser).map(userId => (
-                    <div className="border-b border-gray-100 py-2">
-                        <Avatar />
-                        {onlineUser[userId]}
+            <div className="bg-white w-1/3">
+                <Logo />
+
+                {Object.keys(onlineUserExcludeOwner).map(userId => (
+                    <div key={userId} onClick={() => setSelectedUserId(userId)} 
+                         className={"border-b border-gray-100 flex items-center gap-2 cursor-pointer " + (userId === selectedUserId ? 'bg-blue-50' : '')}>
+                        
+                        {userId === selectedUserId && (
+                            <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
+                        )}
+
+                        <div className="flex gap-2 py-2 pl-4 items-center">
+                            <Avatar username={onlineUser[userId]} userId={userId} />
+                            <span className="text-gray-800">{onlineUser[userId]}</span>
+                        </div>
                     </div>
                 ))}
             </div>
             <div className="flex flex-col bg-blue-50 w-2/3 p-2">
                 <div className="flex-grow">
-                    Messages with selected person
+                    {!selectedUserId && (
+                        <div className="flex h-full flex-grow items-center justify-center">
+                            <div className="text-gray-300">&larr; Select a person from the sidebar to start chat</div>
+                        </div>
+                    )}
                 </div>
                 <div className="flex gap-2">
                     <input type="text" 

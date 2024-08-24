@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGODB_URL);
 
 const jwtSecret = process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
-
+ 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -85,7 +85,7 @@ app.post('/signup', async (req, res) => {
     } catch(error) {
         if (error) throw error; 
     }
-});
+}); 
 
 const server = app.listen(3000);
 
