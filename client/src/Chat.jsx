@@ -3,11 +3,14 @@ import Avatar from "./Avatar";
 import Logo from "./Logo";
 import { UserContext } from "./UserContext";
 import { uniqBy } from "lodash";
+import axios from "axios";
+import Contact from "./Contact";
 
 
 export default function Chat() {
     const [ws, setWs] = useState(null);
-    const [onlineUser, setOnlineUser] = useState([]);
+    const [onlineUser, setOnlineUser] = useState({});
+    const [offlineUser, setOfflineUser] = useState({});
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [newMessageText, setNewMessageText] = useState('');
     const [messages, setMessages] = useState([]);
@@ -16,10 +19,20 @@ export default function Chat() {
     const divUnderMessages = useRef();
     
     useEffect(() => {
+        connectToWebSocket();
+    }, []);
+
+    function connectToWebSocket() {
         const ws = new WebSocket('ws://localhost:3000');
         setWs(ws);
         ws.addEventListener('message', handleMessage);
-    }, []);
+        ws.addEventListener('close', () => {
+            setTimeout(() => {
+                console.log('Disconnected. Trying to reconnect.');
+                connectToWebSocket();
+            }, 1000);
+        });
+    }
 
     function showOnlinePeople(userArray) {
         const user = {};
@@ -31,8 +44,6 @@ export default function Chat() {
 
     function handleMessage(event) {
         const messageData = JSON.parse(event.data);
-        
-        console.log({event, messageData});
 
         if ('online' in messageData) {
             showOnlinePeople(messageData.online);
@@ -56,7 +67,7 @@ export default function Chat() {
             text: newMessageText, 
             sender: id,
             recipient: selectedUserId,
-            id: Date.now(),
+            _id: Date.now(),
         }]));
     }
 
@@ -67,10 +78,35 @@ export default function Chat() {
         }
     }, [messages]);
 
+    useEffect(() => {
+        axios.get('/user').then(res => {
+            const offlineUserArray = res.data
+                .filter(user => user._id !== id)
+                .filter(user => !Object.keys(onlineUser).includes(user._id));
+
+            const offlineUser = {};
+            offlineUserArray.forEach(user => {
+                offlineUser[user._id] = user;
+            })
+
+            setOfflineUser(offlineUser);
+        })
+    }, [onlineUser]);
+
+    useEffect(() => {
+        if (selectedUserId) {
+            axios.get('/messages/'+selectedUserId).then(
+                res => {
+                    setMessages(res.data);
+                }
+            )
+        }
+    },[selectedUserId]);
+
     const onlineUserExcludeOwner = {...onlineUser};
     delete onlineUserExcludeOwner[id];
 
-    const messagesWithoutDupes = uniqBy(messages, 'id');
+    const messagesWithoutDupes = uniqBy(messages, '_id');
 
     return (
         <div className="flex h-screen">
@@ -78,19 +114,27 @@ export default function Chat() {
                 <Logo />
 
                 {Object.keys(onlineUserExcludeOwner).map(userId => (
-                    <div key={userId} onClick={() => setSelectedUserId(userId)} 
-                         className={"border-b border-gray-100 flex items-center gap-2 cursor-pointer " + (userId === selectedUserId ? 'bg-blue-50' : '')}>
-                        
-                        {userId === selectedUserId && (
-                            <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
-                        )}
-
-                        <div className="flex gap-2 py-2 pl-4 items-center">
-                            <Avatar username={onlineUser[userId]} userId={userId} />
-                            <span className="text-gray-800">{onlineUser[userId]}</span>
-                        </div>
-                    </div>
+                    <Contact
+                        key={userId}
+                        id={userId}
+                        online={true}
+                        username={onlineUserExcludeOwner[userId]}
+                        onClick={() => setSelectedUserId(userId)}
+                        selected={userId === selectedUserId}
+                    />
                 ))}
+
+                {Object.keys(offlineUser).map(userId => (
+                    <Contact 
+                        key={userId}
+                        id={userId}
+                        online={false}
+                        username={offlineUser[userId].username}
+                        onClick={() => setSelectedUserId(userId)}
+                        selected={userId === selectedUserId}
+                    />
+                ))}             
+
             </div>
             <div className="flex flex-col bg-blue-50 w-2/3 p-2">
                 <div className="flex-grow">
@@ -103,10 +147,8 @@ export default function Chat() {
                         <div className="relative h-full">
                             <div className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
                                 {messagesWithoutDupes.map(message => (
-                                    <div className={(message.sender === id ? 'text-right' : 'text-left')}>
+                                    <div key={message._id} className={(message.sender === id ? 'text-right' : 'text-left')}>
                                         <div className={"text-left inline-block p-2 my-2 rounded-md text-sm " + (message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-630')}>
-                                            sender: {message.sender} <br />
-                                            my id: {id} <br />
                                             {message.text}
                                         </div>
                                     </div>

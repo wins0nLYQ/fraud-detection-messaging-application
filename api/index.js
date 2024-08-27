@@ -32,10 +32,43 @@ app.use(cors(
     }
 ));
 
+async function getUserDataFromRequest(req) {
+    return new Promise((resolve, reject) => {
+        const token = req.cookies?.token;
+
+        if (token) {
+            jwt.verify(token, jwtSecret, {}, (error, userData) => {
+                if (error) throw error;
+                resolve(userData);
+            });
+        } else {
+            reject('No Token');
+        }
+    })
+}
+
 // Test API connection
 app.get('/test', (req, res) => {
     res.json('Test Ok');
 });
+
+app.get('/messages/:userId', async (req, res) => {
+    const {userId} = req.params;
+    const userData = await getUserDataFromRequest(req);
+    const ourUserId = userData.userId;
+
+    const messages = await Message.find({
+       sender: {$in: [userId, ourUserId]},
+       recipient: {$in: [userId, ourUserId]}
+    }).sort({createdAt: 1});
+
+    res.json(messages);
+})
+
+app.get('/user', async (req, res) => {
+    const users = await User.find({}, {'_id': true, username: true});
+    res.json(users);
+})
 
 // Get user profile API
 app.get('/profile', (req, res) => {
@@ -94,6 +127,30 @@ const server = app.listen(3000);
 const webSocketServer = new webSocket.WebSocketServer({server});
 webSocketServer.on('connection', (connection, req) => {
 
+    function notifyAboutOnlineUser() {
+        [...webSocketServer.clients].forEach(client => {
+            client.send(JSON.stringify({
+                online: [...webSocketServer.clients].map(client => ({userId:client.userId, 
+                    username:client.username}))
+            }));
+        });
+    }
+
+    connection.isAlive = true;
+
+    connection.timer = setInterval(() => {
+        connection.ping();
+        connection.deathTimer = setTimeout(() => {
+            connection.isAlive = false;
+            connection.terminate();
+            notifyAboutOnlineUser();
+        }, 1000);
+    }, 5000);
+
+    connection.on('pong', () => {
+        clearTimeout(connection.deathTimer);
+    })
+
     // Read username and ID form the cookie for this connection
     const cookies = req.headers.cookie;
 
@@ -131,17 +188,12 @@ webSocketServer.on('connection', (connection, req) => {
                         text, 
                         sender:connection.userId,
                         recipient,
-                        id: messageDoc._id,
+                        _id: messageDoc._id,
                     }
                 )));
         }
     });
 
     // notify everyone about online people (when someone connects)
-    [...webSocketServer.clients].forEach(client => {
-        client.send(JSON.stringify({
-            online: [...webSocketServer.clients].map(client => ({userId:client.userId, 
-                username:client.username}))
-        }));
-    });
+    notifyAboutOnlineUser();
 });
