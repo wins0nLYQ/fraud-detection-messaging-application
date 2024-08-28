@@ -17,12 +17,15 @@ const Message = require('./models/Message');
 
 const webSocket = require('ws');
 
+const fileSystem = require('fs');
+
 mongoose.connect(process.env.MONGODB_URL);
 
 const jwtSecret = process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
  
 const app = express();
+app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(
@@ -178,12 +181,26 @@ webSocketServer.on('connection', (connection, req) => {
 
     connection.on('message', async (message) => {
         const messageData = JSON.parse(message.toString());
-        const {recipient, text} = messageData;
-        if (recipient && text) {
+        const {recipient, text, file} = messageData;
+        let fileName = null;
+        if (file) {
+            const fileParts = file.name.split('.');
+            const extension = fileParts[fileParts.length-1];
+            fileName = Date.now() + '.' + extension;
+            const path = __dirname + '/uploads/' + fileName;
+            const bufferData = Buffer.from(file.data.split(',')[1], 'base64');
+
+            fileSystem.writeFile(path, bufferData, () => {
+                console.log('file saved: ' + path);
+            });
+        };
+
+        if (recipient && (text || file)) {
             const messageDoc = await Message.create({
                 sender: connection.userId,
                 recipient, 
                 text,
+                file: file ? fileName : null,
             });
 
             [...webSocketServer.clients]
@@ -193,6 +210,7 @@ webSocketServer.on('connection', (connection, req) => {
                         text, 
                         sender:connection.userId,
                         recipient,
+                        file: file ? fileName : null,
                         _id: messageDoc._id,
                     }
                 )));
@@ -201,4 +219,4 @@ webSocketServer.on('connection', (connection, req) => {
 
     // notify everyone about online people (when someone connects)
     notifyAboutOnlineUser();
-});
+}); 

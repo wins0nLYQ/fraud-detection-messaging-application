@@ -21,7 +21,16 @@ export default function SignUpAndLogInForm() {
     return (
         <div className="bg-blue-50 h-screen flex items-center">
             <form action="" className="w-64 mx-auto mb-12" onSubmit={handleSubmit}>
-                <input 
+                <div className="mb-7 text-center font-quicksand text-6xl font-semibold text-purple-500">
+                    {isLoginOrRegister === 'signup' && (
+                        <div>Sign Up</div>
+                    )}
+                    {isLoginOrRegister === 'login' && (
+                        <div>Log In</div>
+                    )}
+                </div>
+
+                <input
                        value={username} 
                        onChange={ev => setUsername(ev.target.value)}
                        type="text" 
@@ -33,22 +42,24 @@ export default function SignUpAndLogInForm() {
                        type="password"
                        placeholder="Password"
                        className="block w-full rounded-sm p-2 mb-2 border" />
-                <button className="bg-blue-500 text-white block w-full rounded-sm p-2" >
+                
+                <button className="bg-purple-500 text-white block w-full rounded-sm p-2" >
                     {isLoginOrRegister === 'signup' ? 'Sign Up' : 'Login'}
                 </button>
+
                 <div className="text-center mt-2">
                     {isLoginOrRegister === 'signup' && (
                         <div>
-                            Already a Member? <b/>
-                            <button onClick={() => setIsLoginOrRegister('login')}>
+                            Already a Member?
+                            <button className="ml-1 text-purple-600" onClick={() => setIsLoginOrRegister('login')}>
                                 Log In
                             </button>
                         </div>
                     )}
                     {isLoginOrRegister === 'login' && (
                         <div>
-                            Don't have an account? <b/>
-                            <button onClick={() => setIsLoginOrRegister('signup')}>
+                            Don't have an account?
+                            <button className="ml-1 text-purple-600" onClick={() => setIsLoginOrRegister('signup')}>
                                 Sign Up
                             </button>
                         </div>

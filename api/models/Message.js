@@ -12,6 +12,8 @@ const MessageSchema = new mongoose.Schema({
     },
 
     text: String,
+
+    file: String,
 }, {timestamps: true});
 
 const MessageModel = mongoose.model('Message', MessageSchema);

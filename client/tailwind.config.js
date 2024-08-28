@@ -4,7 +4,17 @@ export default {
     "./src/*.jsx"
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        varela: ["'Varela Round'"], 
+        quicksand: ["'Quicksand'"],
+        sans: [
+          '"Segoe UI"',
+          'Roboto',
+          'sans-serif',
+        ]
+      }
+    },
   },
   plugins: [],
 }
