@@ -15,7 +15,7 @@ export default function Chat() {
     const [newMessageText, setNewMessageText] = useState('');
     const [messages, setMessages] = useState([]);
 
-    const {username,id} = useContext(UserContext);
+    const {username,id,setId,setUsername} = useContext(UserContext);
     const divUnderMessages = useRef();
     
     useEffect(() => {
@@ -50,6 +50,14 @@ export default function Chat() {
         } else if ('text' in messageData) {
             setMessages(prev => ([...prev, {...messageData}]));
         }
+    }
+
+    function logout() {
+        axios.post('/logout').then(() => {
+            setWs(null);
+            setId(null);
+            setUsername(null);
+        })
     }
 
     function sendMessage(event) {
@@ -110,31 +118,45 @@ export default function Chat() {
 
     return (
         <div className="flex h-screen">
-            <div className="bg-white w-1/3">
-                <Logo />
+            <div className="bg-white w-1/3 flex flex-col">
+                <div className="flex-grow">
+                    <Logo />
 
-                {Object.keys(onlineUserExcludeOwner).map(userId => (
-                    <Contact
-                        key={userId}
-                        id={userId}
-                        online={true}
-                        username={onlineUserExcludeOwner[userId]}
-                        onClick={() => setSelectedUserId(userId)}
-                        selected={userId === selectedUserId}
-                    />
-                ))}
+                    {Object.keys(onlineUserExcludeOwner).map(userId => (
+                        <Contact
+                            key={userId}
+                            id={userId}
+                            online={true}
+                            username={onlineUserExcludeOwner[userId]}
+                            onClick={() => setSelectedUserId(userId)}
+                            selected={userId === selectedUserId}
+                        />
+                    ))}
 
-                {Object.keys(offlineUser).map(userId => (
-                    <Contact 
-                        key={userId}
-                        id={userId}
-                        online={false}
-                        username={offlineUser[userId].username}
-                        onClick={() => setSelectedUserId(userId)}
-                        selected={userId === selectedUserId}
-                    />
-                ))}             
+                    {Object.keys(offlineUser).map(userId => (
+                        <Contact 
+                            key={userId}
+                            id={userId}
+                            online={false}
+                            username={offlineUser[userId].username}
+                            onClick={() => setSelectedUserId(userId)}
+                            selected={userId === selectedUserId}
+                        />
+                    ))}    
+                </div>
 
+                <div className="p-2 text-center flex items-center justify-center">
+                    <span className="mr-2 text-sm text-gray-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 mr-0.5">
+                            <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                        </svg>
+                        {username}
+                    </span>
+
+                    <button onClick={logout} className="text-sm bg-blue-100 py-1 px-2 text-gray-600 border rounded-md">
+                        Logout
+                    </button>
+                </div>
             </div>
             <div className="flex flex-col bg-blue-50 w-2/3 p-2">
                 <div className="flex-grow">
@@ -166,6 +188,14 @@ export default function Chat() {
                                 onChange={ev => setNewMessageText(ev.target.value)}
                                 placeholder="Type your message here" 
                                 className="bg-white flex-grow border rounded-md p-2"/>
+                        
+                        <button type="button" className="bg-gray-200 p-2 text-gray-500 rounded-md border border-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                            </svg>
+
+                        </button>
+
                         <button type="submit" className="bg-blue-500 p-2 text-white rounded-md">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
                                 viewBox="0 0 24 24" strokeWidth={1.5} 

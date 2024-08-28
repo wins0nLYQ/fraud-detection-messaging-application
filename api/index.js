@@ -101,6 +101,10 @@ app.post('/login', async (req, res) => {
     }
 })
 
+app.post('/logout', (req, res) => {
+    res.cookie('token', '', {sameSite: 'none', secure: true}).json('ok');
+})
+
 // Sign up API
 app.post('/signup', async (req, res) => {
     const { username, password } = req.body;
@@ -142,10 +146,11 @@ webSocketServer.on('connection', (connection, req) => {
         connection.ping();
         connection.deathTimer = setTimeout(() => {
             connection.isAlive = false;
+            clearInterval(connection.timer);
             connection.terminate();
             notifyAboutOnlineUser();
         }, 1000);
-    }, 5000);
+    }, 3000);
 
     connection.on('pong', () => {
         clearTimeout(connection.deathTimer);
