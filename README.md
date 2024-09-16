@@ -12,13 +12,11 @@ This project is a **chat web application** integrated with a **fine-tuned Llama3
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Architecture](#architecture)
-- [Technologies Used](#technologies-used)
-- [Model Details](#model-details)
-- [Contributing](#contributing)
-- [License](#license)
+- [Installation](#Installation)
+  * [Prerequisites](#Prerequisites)
+  * [Frontend](#Frontend)
+  * [Backend](#Backend)
+  * [Setup](#Setup)
 
 ## Installation
 
@@ -31,24 +29,29 @@ To run this project locally, follow these steps:
 - Virtual environment (optional but recommended)
 - Git
 - (Optional) Conda for environment management
+- MongoDB
 
-### Backend (Python, FastAPI, Node.js)
+### Frontend [Tailwind CSS, React.js]
+### Backend [Python, Node.js, Express.js, MongoDB]
 
-### FOR ML_MODEL DIRECTORY
+### Setup
+#### For ML_MODEL Directory
 1. cd ml_model
 2. source .env/bin/activate
 3. pip install -r requirements.txt
 4. uvicorn main:app --reload --port 5000
 
-### FOR CLIENT DIRECTORY
+#### For CLIENT Directory
 1. cd client
 2. npm run dev
 
-### FOR API DIRECTORY
+#### For API Directory
 1. cd api
 2. nodemon index.js
 
-### Start using the system by clicking the link below
+**P/S: Remember to update the MongoDB and JWT_SECRET in "api/.env"
+
+#### Start using the system by clicking the link below
 - http://localhost:5173/
 
 However, the fraud message detector model has been deployed in two ways.
