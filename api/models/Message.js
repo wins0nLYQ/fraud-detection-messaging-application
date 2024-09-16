@@ -12,7 +12,7 @@ const MessageSchema = new mongoose.Schema({
     },
 
     text: String,
-
+    fraud: Number,
     file: String,
 }, {timestamps: true});
 

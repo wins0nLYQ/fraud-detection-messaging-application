@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGODB_URL);
 
 const jwtSecret = process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
- 
+
 const app = express();
 app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
@@ -67,12 +67,12 @@ app.get('/messages/:userId', async (req, res) => {
 
     res.json(messages);
 })
-
+ 
 app.get('/user', async (req, res) => {
     const users = await User.find({}, {'_id': true, username: true});
     res.json(users);
 })
-
+ 
 // Get user profile API
 app.get('/profile', (req, res) => {
     const token = req.cookies?.token;
@@ -83,7 +83,7 @@ app.get('/profile', (req, res) => {
             res.json(userData);
         });
     } else {
-        res.status(401).json('No Token Found... Sorry!');
+        res.status(400).json('No Token Found... Sorry!');
     }
 })
 
@@ -100,7 +100,11 @@ app.post('/login', async (req, res) => {
                     id: foundUser._id,
                 })
             })
+        } else {
+            res.status(401).json('Invalid Password');
         }
+    } else {
+        res.status(404).json('User Not Found');
     }
 })
 
@@ -112,19 +116,25 @@ app.post('/logout', (req, res) => {
 app.post('/signup', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const hashedPassword = bcrypt.hashSync(password, bcryptSalt);
-        const createdUser = await User.create({
-            username:username, 
-            password:hashedPassword
-        });
-        jwt.sign({userId:createdUser._id, username}, jwtSecret, {}, (error, token) => {
-            if (error) throw error;
-            res.cookie('token', token, {sameSite: 'none', secure: true}).status(201).json({
-                id: createdUser._id,
+        const existingUser = await User.findOne({ username });
+
+        if (existingUser) {
+            res.status(409).json('Username already exist. Please choose a different one.')
+        } else {
+            const hashedPassword = bcrypt.hashSync(password, bcryptSalt);
+            const createdUser = await User.create({
+                username:username,
+                password:hashedPassword
             });
-        });
+            jwt.sign({userId:createdUser._id, username}, jwtSecret, {}, (error, token) => {
+                if (error) throw error;
+                res.cookie('token', token, {sameSite: 'none', secure: true}).status(201).json({
+                    id: createdUser._id,
+                });
+            });
+        }
     } catch(error) {
-        if (error) throw error; 
+        res.status(500).json('Internal server error. Please try again later.') 
     }
 }); 
 
@@ -181,8 +191,10 @@ webSocketServer.on('connection', (connection, req) => {
 
     connection.on('message', async (message) => {
         const messageData = JSON.parse(message.toString());
-        const {recipient, text, file} = messageData;
+        const {recipient, text, fraud, file} = messageData;
+
         let fileName = null;
+
         if (file) {
             const fileParts = file.name.split('.');
             const extension = fileParts[fileParts.length-1];
@@ -190,9 +202,7 @@ webSocketServer.on('connection', (connection, req) => {
             const path = __dirname + '/uploads/' + fileName;
             const bufferData = Buffer.from(file.data.split(',')[1], 'base64');
 
-            fileSystem.writeFile(path, bufferData, () => {
-                console.log('file saved: ' + path);
-            });
+            fileSystem.writeFile(path, bufferData);
         };
 
         if (recipient && (text || file)) {
@@ -200,6 +210,7 @@ webSocketServer.on('connection', (connection, req) => {
                 sender: connection.userId,
                 recipient, 
                 text,
+                fraud,
                 file: file ? fileName : null,
             });
 
@@ -210,6 +221,7 @@ webSocketServer.on('connection', (connection, req) => {
                         text, 
                         sender:connection.userId,
                         recipient,
+                        fraud,
                         file: file ? fileName : null,
                         _id: messageDoc._id,
                     }
@@ -219,4 +231,4 @@ webSocketServer.on('connection', (connection, req) => {
 
     // notify everyone about online people (when someone connects)
     notifyAboutOnlineUser();
-}); 
+});

@@ -13,13 +13,26 @@ export default function SignUpAndLogInForm() {
     async function handleSubmit(ev) {
         ev.preventDefault();
         const url = isLoginOrRegister === 'signup' ? 'signup' : 'login';
-        const {data} = await axios.post(url, {username, password});
-        setLoggedInUsername(username);
-        setId(data.id);
+
+        try {
+            const {data} = await axios.post(url, {username, password});
+            setLoggedInUsername(username);
+            setId(data.id);
+        } catch (error) {
+            if (error.response.data) {
+                // Show error message from the backend
+                alert(error.response.data);
+            } else {
+                alert('An unexpected error occurred. Please try again.');
+            }
+
+            setUsername('');
+            setPassword('');
+        }
     };
 
     return (
-        <div className="bg-blue-50 h-screen flex items-center">
+        <div className="bg-purple-50 h-screen flex items-center">
             <form action="" className="w-64 mx-auto mb-12" onSubmit={handleSubmit}>
                 <div className="mb-7 text-center font-quicksand text-6xl font-semibold text-purple-500">
                     {isLoginOrRegister === 'signup' && (
@@ -35,15 +48,23 @@ export default function SignUpAndLogInForm() {
                        onChange={ev => setUsername(ev.target.value)}
                        type="text" 
                        placeholder="Username" 
-                       className="block w-full rounded-sm p-2 mb-2 border" />
+                       className="block w-full rounded-md p-2 mb-2 border 
+                                  focus:outline-none 
+                                  focus:border-purple-500
+                                  focus:ring-purple-500
+                                  focus:ring-1" />
                 <input 
                        value={password} 
                        onChange={ev => setPassword(ev.target.value)} 
                        type="password"
                        placeholder="Password"
-                       className="block w-full rounded-sm p-2 mb-2 border" />
+                       className="block w-full rounded-md p-2 mb-2 border
+                                  focus:outline-none 
+                                  focus:border-purple-500
+                                  focus:ring-purple-500
+                                  focus:ring-1" />
                 
-                <button className="bg-purple-500 text-white block w-full rounded-sm p-2" >
+                <button className="bg-purple-500 text-white block w-full rounded-full p-2 mt-4" >
                     {isLoginOrRegister === 'signup' ? 'Sign Up' : 'Login'}
                 </button>
 
