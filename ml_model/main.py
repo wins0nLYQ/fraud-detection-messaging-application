@@ -14,23 +14,24 @@ headers = {
 	"Content-Type": "application/json"
 }
 
-tokenizer = None
-peft_model = None
-model_setup = False
-
 app = FastAPI()
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Change this to the URL of your React app
+    allow_origins=["http://localhost:5173"],  # URL of the React app
     allow_credentials=True,
-    allow_methods=["*"],  # Allow POST method only
+    allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
  
 class TextInput(BaseModel):
     text: str
+
+
+tokenizer = None
+peft_model = None
+model_setup = False
 
 def local_predictions(text):
     global model_setup, tokenizer, peft_model

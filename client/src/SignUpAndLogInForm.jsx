@@ -18,6 +18,14 @@ export default function SignUpAndLogInForm() {
             const {data} = await axios.post(url, {username, password});
             setLoggedInUsername(username);
             setId(data.id);
+
+            // Request notification permission on page load
+            if (Notification.permission !== 'granted') {
+                const result = confirm("We use notifications to alert you about fraud messages. Do you want to enable notifications?");
+                if (result) {
+                    Notification.requestPermission();
+                }
+            }
         } catch (error) {
             if (error.response.data) {
                 // Show error message from the backend
