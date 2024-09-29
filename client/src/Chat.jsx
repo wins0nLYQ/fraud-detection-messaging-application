@@ -92,7 +92,7 @@ export default function Chat() {
 
         return response.data.prediction;
     }
- 
+  
     async function sendMessage(event, file=null) {
         if (event) event.preventDefault();
 
@@ -226,7 +226,7 @@ export default function Chat() {
                         {username}
                     </span>
 
-                    <button onClick={logout} className="h-[35px] w-[220px] text-sm bg-purple-600 py-1 px-2 text-white rounded-full">
+                    <button onClick={logout} className="h-[35px] w-full max-w-[220px] text-sm bg-purple-600 py-1 px-2 text-white rounded-full">
                         Logout
                     </button> 
                 </div>

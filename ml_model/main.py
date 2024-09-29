@@ -24,7 +24,7 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
- 
+
 class TextInput(BaseModel):
     text: str
 
