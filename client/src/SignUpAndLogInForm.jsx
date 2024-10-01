@@ -10,6 +10,7 @@ export default function SignUpAndLogInForm() {
 
     const {setUsername:setLoggedInUsername, setId} = useContext(UserContext);
 
+    // Handle Signup and LogIn events
     async function handleSubmit(ev) {
         ev.preventDefault();
         const url = isLoginOrRegister === 'signup' ? 'signup' : 'login';

@@ -26,6 +26,7 @@ export default function Chat() {
         connectToWebSocket();
     }, []);
 
+    // connection to WebSocket
     function connectToWebSocket() {
         const ws = new WebSocket('ws://localhost:3000');
         setWs(ws);
@@ -38,6 +39,7 @@ export default function Chat() {
         });
     }
 
+    // Function to show online users
     function showOnlinePeople(userArray) {
         const user = {};
         userArray.forEach(({userId, username}) => {
@@ -55,6 +57,7 @@ export default function Chat() {
         }
     }
 
+    // Function to handle message
     function handleMessage(event) {
         const messageData = JSON.parse(event.data);
 
@@ -73,6 +76,7 @@ export default function Chat() {
         }
     }
  
+    // Logout function
     function logout() {
         axios.post('/logout').then(() => {
             setWs(null);
@@ -81,6 +85,7 @@ export default function Chat() {
         })
     }
 
+    // Function to make API request to model prediction
     async function modelPrediction() {
         let response = await axios.post('http://127.0.0.1:5000/predict', {
             text: newMessageText
@@ -93,12 +98,14 @@ export default function Chat() {
         return response.data.prediction;
     }
   
+    // Send message function
     async function sendMessage(event, file=null) {
         if (event) event.preventDefault();
 
         if (file || newMessageText) {
             let prediction = null;
 
+            // Make model prediction for fraud detection on text messages only
             if (newMessageText !== "") {
                 prediction = await modelPrediction();
             }
@@ -112,6 +119,7 @@ export default function Chat() {
                 }
             ));
 
+            // Send file else clear message field
             if (file) {
                 axios.get('/messages/'+selectedUserId).then(
                     res => {
@@ -131,6 +139,7 @@ export default function Chat() {
         }
     }
 
+    // Send file function
     function sendFile(event) {
         const reader = new FileReader(event.target.files[0]);
         reader.readAsDataURL(event.target.files[0]);

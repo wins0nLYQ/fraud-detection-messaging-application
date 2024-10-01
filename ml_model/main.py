@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from peft import PeftModel
 from pydantic import BaseModel
 import torch
@@ -25,54 +25,70 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+# For text string format
 class TextInput(BaseModel):
     text: str
 
-
+# For local model setup
 tokenizer = None
 peft_model = None
 model_setup = False
 
+# Local Prediction Function
 def local_predictions(text):
     global model_setup, tokenizer, peft_model
     
+    # Setup model once
     if not model_setup:
         model_name = "meta-llama/Meta-Llama-3-8B"
         model_path = "./fine-tuned-llama3"
 
+        # Get tokenizer
         tokenizer = AutoTokenizer.from_pretrained(model_path)
 
+        # Get LLaMA3 Model
         model = AutoModelForSequenceClassification.from_pretrained(
             model_name,
             num_labels=2
         )
 
+        # Load PEFT Configuration
         peft_model = PeftModel.from_pretrained(model, model_path)
 
+        # Set model setup to True
         model_setup = True
 
+    # Tokenization
     input = tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
 
+    # Model prediction
     with torch.no_grad():
         output = peft_model(**input)
 
+    # Get model output logits
     logits = output.logits
 
+    # Get probabilities from logits
     probs = torch.nn.functional.softmax(logits, dim=-1)
 
+    # Get the predicted class index
     predicted_class = torch.argmax(probs, dim=1).item()
 
     return predicted_class
 
+
+# For cloud model setup
 def cloud_predictions(text):
     input = {
             "inputs": text,
             "parameters": {}
         }
     
+    # Make prediction request to the API
     response = requests.post(API_URL, headers=headers, json=input)
     return response.json()
 
+# Model Predict API for system
 @app.post("/predict")
 def fraud_prediction(message: TextInput):
     try:

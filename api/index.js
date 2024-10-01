@@ -35,6 +35,7 @@ app.use(cors(
     }
 ));
 
+// Get User Token
 async function getUserDataFromRequest(req) {
     return new Promise((resolve, reject) => {
         const token = req.cookies?.token;
@@ -55,6 +56,7 @@ app.get('/test', (req, res) => {
     res.json('Test Ok');
 });
 
+// Get Messages
 app.get('/messages/:userId', async (req, res) => {
     const {userId} = req.params;
     const userData = await getUserDataFromRequest(req);
@@ -68,6 +70,7 @@ app.get('/messages/:userId', async (req, res) => {
     res.json(messages);
 })
  
+// Get User
 app.get('/user', async (req, res) => {
     const users = await User.find({}, {'_id': true, username: true});
     res.json(users);
@@ -108,6 +111,7 @@ app.post('/login', async (req, res) => {
     }
 })
 
+// Logout API
 app.post('/logout', (req, res) => {
     res.cookie('token', '', {sameSite: 'none', secure: true}).json('ok');
 })
@@ -189,6 +193,7 @@ webSocketServer.on('connection', (connection, req) => {
         }
     }
 
+    // Send message connection
     connection.on('message', async (message) => {
         const messageData = JSON.parse(message.toString());
         const {recipient, text, fraud, file} = messageData;

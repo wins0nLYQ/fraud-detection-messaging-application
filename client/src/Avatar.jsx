@@ -1,5 +1,5 @@
 export default function Avatar({userId, username, online}) {
-    // Can add more colours
+    // Avatar colours
     const colors = ['bg-red-200', 'bg-green-200', 
                     'bg-purple-200', 'bg-blue-200', 
                     'bg-yellow-200', 'bg-teal-200'];
