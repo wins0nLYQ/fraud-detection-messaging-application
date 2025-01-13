@@ -12,7 +12,7 @@ const cors = require('cors');
 
 const bcrypt = require('bcryptjs');
 
-const User = require('./models/User');
+const User = require('./models/User'); 
 const Message = require('./models/Message');
 
 const webSocket = require('ws');

@@ -5,12 +5,17 @@ from peft import PeftModel
 from pydantic import BaseModel
 import torch
 import requests
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 API_URL = "https://plfyfec190nchov2.us-east-1.aws.endpoints.huggingface.cloud"
 
+HF_TOKEN=os.getenv("HF_TOKEN")
+
 headers = {
 	"Accept" : "application/json",
-	"Authorization": "Bearer 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",
+	"Authorization": HF_TOKEN,
 	"Content-Type": "application/json"
 }
 

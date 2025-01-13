@@ -6,3 +6,4 @@ torch
 bitsandbytes
 peft
 pydantic
+python-dotenv

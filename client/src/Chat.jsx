@@ -1,6 +1,5 @@
 import { useEffect, useState, useContext, useRef } from "react";
 import TextareaAutosize from 'react-textarea-autosize';
-import Avatar from "./Avatar";
 import Logo from "./Logo";
 import { UserContext } from "./UserContext";
 import { uniqBy } from "lodash";
@@ -47,7 +46,7 @@ export default function Chat() {
         });
         setOnlineUser(user);
     }
-
+ 
     // Function to trigger push notification
     function showFraudNotification() {
         if (Notification.permission === 'granted') {
