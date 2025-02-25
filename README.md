@@ -1,6 +1,6 @@
 # Chat Web Application with Fraud Message Detection
 
-This project is a **chat web application** integrated with a **fine-tuned Llama3 model** to detect fraudulent messages in real-time. The application allows users to communicate seamlessly while providing a layer of security by identifying and flagging potentially harmful or fraudulent content.
+This project is a **fraud detection messaging web application** integrated with a **fine-tuned Llama3 model** to detect fraudulent messages in real-time. The application allows users to communicate seamlessly while providing a layer of security by identifying and flagging potentially harmful or fraudulent content.
 
 ## Features
 
